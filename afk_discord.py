@@ -3,13 +3,12 @@ import asyncio
 import ctypes.util
 import sys
 
-# ================= Config =================
-TOKEN = "TXasdasdeSa............." # id User
-VC_ID = 00000000000000000000000 # id Voice
-STATUS_GAME = "Minecraft 2"  # Ganti nama game atau aktivitas
+# ================= KONFIGURASI =================
+TOKEN = "MTQ1NjkxOTQ2MDg4M/w......................"
+VC_ID = 2143234253424543545
+STATUS_GAME = "Minecraft 2" 
 # ===============================================
 
-# --- FIX UNTUK LINUX/LXC (fix error voice) ---
 opus_path = ctypes.util.find_library('opus')
 if opus_path:
     if not discord.opus.is_loaded():
@@ -33,12 +32,22 @@ class AFKClient(discord.Client):
             return
 
         try:
-            await channel.connect(self_deaf=True, self_mute=True)
+            # set timeout (10s -> 30s)
+            await channel.connect(self_deaf=True, self_mute=True, timeout=30.0)
             print(f"✅ SUKSES: Terhubung ke {channel.name}")
+            
+        except asyncio.TimeoutError:
+            await asyncio.sleep(2)
+            
+            if channel.guild.me in channel.members:
+                print("⚠️ Warning: Terdeteksi Timeout, TAPI akun berhasil masuk voice.")
+                print("✅ Mengabaikan error dan lanjut jalan.")
+            else:
+                print("❌ Error: Timeout dan gagal masuk voice.")
+                
         except Exception as e:
-            print(f"Error Voice: {e}")
+            print(f"Error Lain: {e}")
 
-# Loop agar bot jalan terus
 loop = asyncio.new_event_loop()
 asyncio.set_event_loop(loop)
 client = AFKClient()
@@ -48,4 +57,4 @@ try:
 except KeyboardInterrupt:
     loop.run_until_complete(client.close())
 except Exception as e:
-    print(f"Error: {e}")
+    pass
